@@ -9,6 +9,13 @@ services:
     depends_on:
       mysql:
         condition: service_healthy
+    networks:
+      - job-board-network
+    environment:
+      - DB_HOST=mysql
+      - DB_USER=root
+      - DB_PASSWORD=root
+      - DB_NAME=jobboard
 
   mysql:
     image: mysql:8.0
@@ -20,10 +27,21 @@ services:
     volumes:
       - mysql-data:/var/lib/mysql
       - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - job-board-network
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=jobboard
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      interval: 5s
       timeout: 5s
       retries: 10
+      start_period: 10s
+
+networks:
+  job-board-network:
+    driver: bridge
 
 volumes:
   mysql-data:
